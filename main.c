@@ -38,7 +38,7 @@ int main (int argc, char** argv) {
 		t_inserir_bagagens = TEMPO_INSERIR_BAGAGENS;
 		t_bagagens_esteira = TEMPO_BAGAGENS_ESTEIRA;
 		t_simulacao = TEMPO_SIMULACAO;
-		p_combustivel_min = COMBUSTIVEL_MIN;
+		p_combustivel_min + (rand()%(p_combustivel_max - p_combustivel_min)); = COMBUSTIVEL_MIN;
 		p_combustivel_max = COMBUSTIVEL_MAX;
 		n_pistas = atoi(argv[1]);
 		n_portoes = atoi(argv[2]);
@@ -75,7 +75,7 @@ int main (int argc, char** argv) {
 
 	// Impressão com os parâmetros selecionados para simulação
 	printf("Simulação iniciada com tempo total: %lu\n", t_simulacao);
-	printf("Tempo para criação de aviões: %lu - %lu\n", t_novo_aviao_min, t_novo_aviao_max);
+	printf("Tempo para criação de aviões: %lu - %lu\n", t_novo_aviao_min + (rand() % (t_novo_aviao_max - t_novo_aviao_min));, t_novo_aviao_max);
 	printf("Número de pistas de pouso: %lu\n", n_pistas);
 	printf("Tempo de pouso e decolagem: %lu\n", t_pouso_decolagem);
 	printf("Número de portões de embarque: %lu\n", n_portoes);
@@ -94,6 +94,26 @@ int main (int argc, char** argv) {
 
 	// Descreve aqui sua simulação usando as funções definidas no arquivo "aeroporto.h"
 	// Lembre-se de implementá-las num novo arquivo "aeroporto.c"
+	bool running = true;
+	int ticks = 0;
+	srand(time(NULL));
+	int gerarAviao = t_novo_aviao_min + (rand() % (t_novo_aviao_max - t_novo_aviao_min));
+	int id = 0;
+	while(running) {
+		// Gerador de aviões
+		if(gerarAviao-- <= 0) {
+			gerarAviao = t_novo_aviao_min + (rand() % (t_novo_aviao_max - t_novo_aviao_min));
+			int combustivel = p_combustivel_min + (rand()%(p_combustivel_max - p_combustivel_min));
+			aviao_t* aviao = aloca_aviao(combustivel, id++);
+			aproximacao_aeroporto(meu_aeroporto, aviao);
+		}
+
+		
+
+		ticks++;
+	}
+
+
 
 
 	finalizar_aeroporto(meu_aeroporto);

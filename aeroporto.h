@@ -14,6 +14,15 @@ typedef struct {
 	tempo_t t_remover_bagagens;
 	tempo_t t_inserir_bagagens;
 	tempo_t t_bagagens_esteira;
+
+	tempo_t* contador_pistas;
+	sem_t pistas_livres; // Semaforo de pistas
+	sem_t portoes_livres; // Semaforo de portões
+	sem_t* esteiras_livres; // Array de esteiras
+	fila_ordenada_t avioes_aproximando; // Avioes no ar, esperando para pousar
+	fila_ordenada_t avioes_prioridade; // Avioes com combustivel baixo
+	aviao_t* avioes_acoplados; // Aviões acoplados
+	aviao_t* avioes_acoplados;
 	// Adicionar aqui outros atributos que você achar necessários.
 	// Exemplo: esteiras, portões, etc...
 } aeroporto_t;
