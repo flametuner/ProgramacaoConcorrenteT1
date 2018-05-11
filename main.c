@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <semaphore.h>
 
 #include "aeroporto.h"
 
@@ -13,6 +14,30 @@
 #define TEMPO_INSERIR_BAGAGENS 110
 #define TEMPO_BAGAGENS_ESTEIRA 200
 #define TEMPO_SIMULACAO 10000
+
+
+typedef struct {
+  aeroporto_t* aeroporto;
+  aviao_t* aviao;
+} thread_arg;
+
+void* aviao_func(void*arg) {
+  thread_arg* aeroviao = (thread_arg*)arg;
+	aviao_t* aviao = aeroviao->aviao;
+	aeroporto_t* aeroporto = aeroviao->aeroporto;
+  // TODO Fazer a implementação da função da thread
+  // Avião está voando e esperando liberar pista de voo
+  aproximacao_aeroporto(aeroporto, aviao);
+  // Avião pousou e está em processo de acoplagem
+	acoplar_portao(aeroporto, aviao);
+  // Avião está acoplado e esperando o transporte de bagagem terminar
+	transportar_bagagens(aeroporto, aviao);
+  // Avião está em processo de decolagem
+	decolar_aviao(aeroporto, aviao);
+  // Avião decolou e está no ar novamente
+	free(aeroviao);
+	return NULL;
+}
 
 int main (int argc, char** argv) {
 
@@ -38,7 +63,7 @@ int main (int argc, char** argv) {
 		t_inserir_bagagens = TEMPO_INSERIR_BAGAGENS;
 		t_bagagens_esteira = TEMPO_BAGAGENS_ESTEIRA;
 		t_simulacao = TEMPO_SIMULACAO;
-		p_combustivel_min + (rand()%(p_combustivel_max - p_combustivel_min)); = COMBUSTIVEL_MIN;
+		p_combustivel_min = COMBUSTIVEL_MIN;
 		p_combustivel_max = COMBUSTIVEL_MAX;
 		n_pistas = atoi(argv[1]);
 		n_portoes = atoi(argv[2]);
@@ -75,7 +100,7 @@ int main (int argc, char** argv) {
 
 	// Impressão com os parâmetros selecionados para simulação
 	printf("Simulação iniciada com tempo total: %lu\n", t_simulacao);
-	printf("Tempo para criação de aviões: %lu - %lu\n", t_novo_aviao_min + (rand() % (t_novo_aviao_max - t_novo_aviao_min));, t_novo_aviao_max);
+	printf("Tempo para criação de aviões: %lu - %lu\n", t_novo_aviao_min, t_novo_aviao_max);
 	printf("Número de pistas de pouso: %lu\n", n_pistas);
 	printf("Tempo de pouso e decolagem: %lu\n", t_pouso_decolagem);
 	printf("Número de portões de embarque: %lu\n", n_portoes);
@@ -91,10 +116,9 @@ int main (int argc, char** argv) {
 				t_inserir_bagagens, t_bagagens_esteira};
 
 	aeroporto_t* meu_aeroporto = iniciar_aeroporto(args, n_args);
-
 	// Descreve aqui sua simulação usando as funções definidas no arquivo "aeroporto.h"
 	// Lembre-se de implementá-las num novo arquivo "aeroporto.c"
-	bool running = true;
+	int running = 1;
 	int ticks = 0;
 	srand(time(NULL));
 	int gerarAviao = t_novo_aviao_min + (rand() % (t_novo_aviao_max - t_novo_aviao_min));
@@ -105,15 +129,38 @@ int main (int argc, char** argv) {
 			gerarAviao = t_novo_aviao_min + (rand() % (t_novo_aviao_max - t_novo_aviao_min));
 			int combustivel = p_combustivel_min + (rand()%(p_combustivel_max - p_combustivel_min));
 			aviao_t* aviao = aloca_aviao(combustivel, id++);
-			aproximacao_aeroporto(meu_aeroporto, aviao);
+
+			thread_arg* argd = malloc(sizeof(thread_arg));
+			argd->aviao = aviao;
+			argd->aeroporto = meu_aeroporto;
+			pthread_create(&aviao->thread, NULL, aviao_func, &(*argd));
 		}
 
-		
+		// Libera pouso de aviões
+		if(meu_aeroporto->avioes_prioridade->n_elementos > 0) {
 
-		ticks++;
+			int valor;
+			sem_getvalue(&meu_aeroporto->pistas_livres, &valor);
+			while(valor <= meu_aeroporto->n_pistas && meu_aeroporto->avioes_prioridade->n_elementos > 0) {
+				aviao_t* next = remover (meu_aeroporto->avioes_prioridade);
+				// Pista foi liberada e está em processo de pouso
+				pousar_aviao(meu_aeroporto, next);
+			}
+		} else if(meu_aeroporto->avioes_aproximando->n_elementos > 0) {
+
+			int valor;
+			sem_getvalue(&meu_aeroporto->pistas_livres, &valor);
+			while(valor < meu_aeroporto->n_pistas && meu_aeroporto->avioes_aproximando->n_elementos > 0) {
+				aviao_t* next = remover (meu_aeroporto->avioes_aproximando);
+				// Pista foi liberada e está em processo de pouso
+				pousar_aviao(meu_aeroporto, next);
+			}
+		}
+		//printf("%i\n", ticks);
+
+		if(ticks++ > TEMPO_SIMULACAO)
+			running = 0;
 	}
-
-
 
 
 	finalizar_aeroporto(meu_aeroporto);

@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "fila.h"
 
 /**
@@ -7,7 +8,7 @@
  **/
 
  elemento_t * aloca_elemento (aviao_t * dado) {
-    elemento_t* elemento = malloc(sizeof(dado));
+    elemento_t* elemento = malloc(sizeof(elemento_t));
     elemento->dado = dado;
     return elemento;
  }
@@ -36,13 +37,14 @@ void inserir (fila_ordenada_t * fila, aviao_t * dado) {
     elemento->anterior = fila->ultimo;
     fila->ultimo = elemento;
   }
+  fila->n_elementos++;
 }
 
 aviao_t * remover (fila_ordenada_t * fila) {
   aviao_t* aviao;
   if(fila->n_elementos > 1) {
-    aviao = fila->primeiro->dado;
-    elemento_t t = fila->primeiro;
+    elemento_t* t = fila->primeiro;
+    aviao = t->dado;
     fila->primeiro = t->proximo;
     desaloca_elemento(t);
   } else {
@@ -50,5 +52,6 @@ aviao_t * remover (fila_ordenada_t * fila) {
     fila->primeiro = NULL;
     fila->ultimo = NULL;
   }
+  fila->n_elementos--;
   return aviao;
 }
