@@ -20,7 +20,8 @@ typedef struct {
 	sem_t* esteiras_livres; // Array de esteiras
 	fila_ordenada_t* avioes_aproximando; // Avioes no ar, esperando para pousar
 	fila_ordenada_t* avioes_prioridade; // Avioes com combustivel baixo
-	aviao_t* aeroporto; // Aviões acoplados
+	size_t avioes_no_aeroporto;
+	pthread_mutex_t avioes_mutex;
 	// Adicionar aqui outros atributos que você achar necessários.
 	// Exemplo: esteiras, portões, etc...
 } aeroporto_t;

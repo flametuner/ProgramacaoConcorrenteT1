@@ -125,7 +125,7 @@ int main (int argc, char** argv) {
 	int id = 0;
 	while(running) {
 		// Gerador de aviões
-		if(gerarAviao-- <= 0) {
+		if(gerarAviao-- <= 0 && ticks < t_simulacao) { // Gerar apenas enquanto tiver rodando a simuação
 			gerarAviao = t_novo_aviao_min + (rand() % (t_novo_aviao_max - t_novo_aviao_min));
 			int combustivel = p_combustivel_min + (rand()%(p_combustivel_max - p_combustivel_min));
 			aviao_t* aviao = aloca_aviao(combustivel, id++);
@@ -156,9 +156,7 @@ int main (int argc, char** argv) {
 				pousar_aviao(meu_aeroporto, next);
 			}
 		}
-		//printf("%i\n", ticks);
-
-		if(ticks++ > TEMPO_SIMULACAO)
+		if(ticks++ > t_simulacao && meu_aeroporto->avioes_no_aeroporto == 0)
 			running = 0;
 	}
 
